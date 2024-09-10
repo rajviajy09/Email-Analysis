@@ -1,59 +1,112 @@
-# Email Analysis Process Guide
+# Email Analysis Project
 
-This document outlines the key steps to follow when analyzing emails in a cybersecurity context. Email-based attacks are one of the most common vectors for malware distribution and phishing attempts. A systematic approach helps in identifying malicious activities and taking preventive actions.
+## Overview
+
+This project focuses on analyzing email content for potential threats, such as phishing or malicious attachments. The analysis covers key elements such as email headers, attachments, sender details, and embedded links. **CyberChef** and **VMware** were used for decoding and safely analyzing the content.
+
+## Scenario
+
+In a fictional scenario, a country faces a crisis due to citizen abduction and receives a ransom demand via email. The email threatens harm unless a ransom of **1 billion candies** is paid, with instructions pointing to a suspicious attachment.
+
+## Email Analysis Breakdown
+
+### 1. Email Headers
+
+Email headers are critical for understanding the sender’s legitimacy. Here’s what we found:
+
+- **ARC Header (Authenticated Received Chain):**  
+  Used for verification purposes. A trusted intermediate server digitally signs the header.  
+  *Suspicious detail:* A forged ARC header was detected, potentially faked by a malicious sender.
+  
+  _**[Insert ARC Header Image Here]**_
+
+- **Return Path:**  
+  The return path is an email address used if the email fails to send.  
+  *Suspicious detail:* The return path didn’t match the sender’s domain, hinting at phishing.
+
+  _**[Insert Return Path Image Here]**_
+
+- **Authentication Results (SPF, DKIM, DMARC):**  
+  These show email authenticity protections.
+  
+  - **SPF (Sender Policy Framework):**  
+    The domain `microapple.com` failed SPF validation, indicating that the mail server (IP `93.99.104.210`) was not authorized to send emails for the domain.  
+    *Suspicious detail:* SPF failure signals that the email may have originated from an illegitimate source.
+    
+    _**[Insert SPF Failure Image Here]**_
+
+### 2. Sender and Receiver Info
+
+*Suspicious detail:* Discrepancies were found between the "Sender" and "Reply-to" email addresses, which is a common tactic used in phishing attacks.
+
+
+
+### 3. Message ID
+
+Each email has a unique message ID. This one was present but didn’t follow standard patterns for the sending domain, further raising suspicion.
+
+_**[Insert Message ID Image Here]**_
+
+### 4. Encoding Type and Content
+
+The email content uses a specific encoding type. In this case, Base64 encoding was detected. This can often conceal malicious payloads.
+
+_**[Insert Encoding Type Image Here]**_
+
+## Step-by-Step Process for Analyzing Base64 Encoded Attachments
+
+1. **Decode Base64 to Binary:**  
+   Using **CyberChef**, we decoded the Base64-encoded attachment back into its original binary format.
+   
+2. **Convert Binary to Hex:**  
+   The binary data was converted into hexadecimal using **CyberChef**. This step makes the data easier to analyze.
+
+3. **Identify File Signature:**  
+   We analyzed the hexadecimal string to identify the file type using the first few bytes (magic numbers).
+
+   *Suspicious detail:* The file was labeled as a **PDF**, but after analysis, it was revealed to be a **ZIP file** (`50 4b 03 04`).
+
+_**[Insert Hex Signature Image Here]**_
 
 ---
 
-## 1. Identify the Context 📧
-   Before diving into technical details, it’s crucial to understand the context of the email:
-   - **Sender Information**: Who sent the email? Is it from a known contact, or does the domain look suspicious?
-   - **Subject and Body**: What is the email about? Is the language alarming or requesting immediate action (e.g., password reset, account verification)?
-   - **Timing**: When was the email received? Was it sent at an unusual time, possibly indicating automation or bot-like behavior?
+### File Type Analysis Results:
 
-   **Objective**: Establish if the email is unexpected, urgent, or looks unusual, which could hint at phishing or social engineering attempts.
+- **DaughterCrown:**  
+  First bytes `ff d8 ff e0 00 10`, identified as a **JPEG** image.
+  
+  *Suspicious detail:* The file type didn’t match its claimed format in the email.
+  
+- **GoodJobMajor:**  
+  First bytes `25 50 44 46`, identified as a **PDF** document.
 
----
+  *Suspicious detail:* It was correctly labeled, but further inspection is required to ensure no hidden threats.
 
-## 2. Identify Domain/IP Links and Attachment Details 🌐
-   In this step, the focus is on extracting technical indicators:
-   - **Links**: Review all hyperlinks in the email. Do they match the visible text, or do they redirect to suspicious domains? 
-   - **IP Address**: Extract IPs from email headers to check where the email originated from.
-   - **Domain Analysis**: Use tools like MXToolbox or VirusTotal to check the reputation of domains.
-   - **Attachments**: If there are attachments, verify their file type. Attachments can often be disguised as benign documents (e.g., PDFs, Word files) but contain malware.
-
-   **Objective**: Identify if the email contains malicious URLs, IPs, or suspicious attachments.
+- **Money.xlsx:**  
+  Initially appears as an Excel file. However, we verified the extension and header to confirm its legitimacy.
 
 ---
 
-## 3. Identify Overall Endpoint Security Status 🛡️
-   Assess the security status of the endpoint receiving the email:
-   - **Antivirus Status**: Ensure that antivirus software is up-to-date and running.
-   - **Sandboxing**: If suspicious, open attachments or links in a sandboxed environment to prevent system-wide infections.
-   - **User Permissions**: Check if the recipient has admin privileges, which could exacerbate the risk if the email is malicious.
+### Conclusion
 
-   **Objective**: Verify the recipient's device security level to gauge how vulnerable the system is to email-based threats.
+This project highlights how important it is to inspect every detail in an email, from headers to file attachments. In this case, we found multiple suspicious indicators, such as mismatched domains, SPF failures, and incorrectly labeled files, which pointed to potential phishing attempts.
 
 ---
 
-## 4. Identify Possible Sources of This Behavior 🔎
-   To understand the potential origin of the threat:
-   - **Spoofed Domains**: Identify if the email is sent from a spoofed domain or a known trusted source.
-   - **Third-Party Compromises**: Check whether the email might be a result of a third-party compromise, where a legitimate account has been hijacked.
-   - **Botnets**: Investigate if the behavior aligns with mass-distributed campaigns, often using botnets to send emails in bulk.
+### How to Use
 
-   **Objective**: Analyze the possible origins of the suspicious activity and assess the likelihood of phishing, spoofing, or malware campaigns.
-
----
-
-## 5. Identify Infection Radius 🖥️
-   After initial analysis, assess whether the email has already caused damage:
-   - **Email Spread**: Has the email been forwarded to other users in the organization or externally?
-   - **Affected Systems**: Check if multiple endpoints have been compromised as a result of interacting with the email.
-   - **Infection Indicators**: Look for signs of malware, such as slow system performance, unexpected network traffic, or alerts from security tools.
-
-   **Objective**: Identify the scope of the infection and determine how far the malicious email has spread.
+1. Clone this repository.
+2. Analyze suspicious emails by decoding their headers and attachments.
+3. Use **CyberChef** for Base64 decoding and file signature identification.
+4. Analyze files in **VMware** to prevent accidental execution of malicious content.
 
 ---
 
-## Summary 📝
-By following this process, cybersecurity professionals can systematically analyze suspicious emails, identify potential threats, and respond accordingly to minimize damage. Always follow proper incident response protocols if an email is deemed malicious.
+### Tools Used
+- **CyberChef**: For Base64 decoding and file analysis.
+- **VMware**: To create a safe virtual environment for testing.
+
+### Future Improvements
+
+- Automate parts of the analysis to quickly detect phishing patterns.
+- Expand the project to analyze email attachments for malware signatures.
